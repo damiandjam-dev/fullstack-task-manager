@@ -1,4 +1,14 @@
 # Full-Stack Task Manager
+## Application Preview
+
+### Frontend
+![Frontend](screenshots/frontend.png)
+
+### API Documentation
+![API Docs](screenshots/api-docs.png)
+
+### Backend Status
+![Backend](screenshots/backend-status.png)
 
 A full-stack task management application built with **React (Frontend)** and **FastAPI (Backend)**.
 
