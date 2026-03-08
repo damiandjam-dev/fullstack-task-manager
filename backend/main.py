@@ -5,14 +5,18 @@ from typing import List
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",
+    "https://fullstack-task-manager-ten.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 class Task(BaseModel):
     id: int
     title: str
