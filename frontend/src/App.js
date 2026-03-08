@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API_BASE = "http://localhost:8000";
+const API_URL = "https://task-manager-api-rvf7.onrender.com";
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
