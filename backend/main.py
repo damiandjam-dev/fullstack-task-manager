@@ -1,7 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from typing import List
+
+from database import SessionLocal, engine, Base
+from models import Task
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -17,44 +23,68 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-class Task(BaseModel):
-    id: int
-    title: str
-    completed: bool = False
 
 class TaskCreate(BaseModel):
     title: str
 
-tasks: List[Task] = [
-    Task(id=1, title="Learn FastAPI", completed=False),
-    Task(id=2, title="Connect React", completed=True),
-]
-next_id = 3
+class TaskResponse(BaseModel):
+    id: int
+    title: str
+    completed: bool
+
+    class Config:
+        from_attributes = True
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 @app.get("/")
 def root():
     return {"status": "ok"}
 
-@app.get("/tasks")
-def get_tasks():
-    return tasks
 
-@app.post("/tasks")
-def create_task(payload: TaskCreate):
-    global next_id
-    task = Task(id=next_id, title=payload.title, completed=False)
-    next_id += 1
-    tasks.append(task)
+@app.get("/tasks", response_model=List[TaskResponse])
+def get_tasks(db: Session = Depends(get_db)):
+    return db.query(Task).all()
+
+
+@app.post("/tasks", response_model=TaskResponse)
+def create_task(payload: TaskCreate, db: Session = Depends(get_db)):
+    task = Task(title=payload.title, completed=False)
+    db.add(task)
+    db.commit()
+    db.refresh(task)
     return task
+
+
 @app.delete("/tasks/{task_id}")
-def delete_task(task_id: int):
-    global tasks
-    tasks = [t for t in tasks if t.id != task_id]
+def delete_task(task_id: int, db: Session = Depends(get_db)):
+    task = db.query(Task).filter(Task.id == task_id).first()
+
+    if not task:
+        return {"error": "Task not found"}
+
+    db.delete(task)
+    db.commit()
+
     return {"deleted": task_id}
-@app.put("/tasks/{task_id}")
-def toggle_task(task_id: int):
-    for task in tasks:
-        if task.id == task_id:
-            task.completed = not task.completed
-            return task
-    return {"error": "Task not found"}
+
+
+@app.put("/tasks/{task_id}", response_model=TaskResponse)
+def toggle_task(task_id: int, db: Session = Depends(get_db)):
+    task = db.query(Task).filter(Task.id == task_id).first()
+
+    if not task:
+        return {"error": "Task not found"}
+
+    task.completed = not task.completed
+    db.commit()
+    db.refresh(task)
+
+    return task
