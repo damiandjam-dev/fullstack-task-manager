@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API_URL = "https://task-manager-api-rvf7.onrender.com";
+const API_BASE = "https://task-manager-api-rvf7.onrender.com";
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
@@ -12,7 +12,9 @@ export default function App() {
     try {
       setError("");
       const res = await fetch(`${API_BASE}/tasks`);
-      if (!res.ok) throw new Error(`GET /tasks failed (${res.status})`);
+      if (!res.ok) {
+        throw new Error(`GET /tasks failed (${res.status})`);
+      }
       const data = await res.json();
       setTasks(data);
     } catch (e) {
@@ -31,11 +33,15 @@ export default function App() {
 
       const res = await fetch(`${API_BASE}/tasks`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ title: trimmed }),
       });
 
-      if (!res.ok) throw new Error(`POST /tasks failed (${res.status})`);
+      if (!res.ok) {
+        throw new Error(`POST /tasks failed (${res.status})`);
+      }
 
       setTitle("");
       await loadTasks();
@@ -49,8 +55,14 @@ export default function App() {
   async function toggleTask(id) {
     try {
       setError("");
-      const res = await fetch(`${API_BASE}/tasks/${id}`, { method: "PUT" });
-      if (!res.ok) throw new Error(`PUT /tasks/${id} failed (${res.status})`);
+      const res = await fetch(`${API_BASE}/tasks/${id}`, {
+        method: "PUT",
+      });
+
+      if (!res.ok) {
+        throw new Error(`PUT /tasks/${id} failed (${res.status})`);
+      }
+
       await loadTasks();
     } catch (e) {
       setError(e.message || "Failed to toggle task");
@@ -60,8 +72,14 @@ export default function App() {
   async function deleteTask(id) {
     try {
       setError("");
-      const res = await fetch(`${API_BASE}/tasks/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error(`DELETE /tasks/${id} failed (${res.status})`);
+      const res = await fetch(`${API_BASE}/tasks/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        throw new Error(`DELETE /tasks/${id} failed (${res.status})`);
+      }
+
       await loadTasks();
     } catch (e) {
       setError(e.message || "Failed to delete task");
@@ -94,7 +112,10 @@ export default function App() {
       >
         <h1 style={{ marginTop: 0, marginBottom: 16 }}>Task Manager</h1>
 
-        <form onSubmit={addTask} style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+        <form
+          onSubmit={addTask}
+          style={{ display: "flex", gap: 8, marginBottom: 14 }}
+        >
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -106,7 +127,11 @@ export default function App() {
               border: "1px solid #ccc",
             }}
           />
-          <button type="submit" disabled={loading} style={{ padding: "10px 12px" }}>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{ padding: "10px 12px" }}
+          >
             {loading ? "Adding..." : "Add"}
           </button>
           <button
@@ -119,7 +144,15 @@ export default function App() {
         </form>
 
         {error && (
-          <div style={{ background: "#fee2e2", color: "#7f1d1d", padding: 10, borderRadius: 6, marginBottom: 12 }}>
+          <div
+            style={{
+              background: "#fee2e2",
+              color: "#7f1d1d",
+              padding: 10,
+              borderRadius: 6,
+              marginBottom: 12,
+            }}
+          >
             {error}
           </div>
         )}
@@ -149,7 +182,8 @@ export default function App() {
                     userSelect: "none",
                   }}
                 >
-                  {t.completed ? "✅ " : ""}{t.title}
+                  {t.completed ? "✅ " : ""}
+                  {t.title}
                 </span>
 
                 <button
